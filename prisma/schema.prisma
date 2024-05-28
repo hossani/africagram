@@ -19,7 +19,7 @@ model Utilisateur {
   lastname          String
   email             String     @unique
   password          String
-  isAdmin           Boolean
+  isAdmin           Boolean    @default(false)
   date_creation     DateTime   @default(now())
   date_modification DateTime   @updatedAt
   profile           Profile?
