@@ -25,8 +25,9 @@ const login=async (req,res)=>{
         const user=await prisma.utilisateur.findUnique({
             where:{email}
         });
-        if(!user || bcrypt.compare(password,user.password)) throw new UnauthenticatedError('Identifiants invalides');
-        const token=jwt.sign({firstname:user.firstname, lastname:user.lastname,email ,isAdmin:user.isAdmin},process.env.JWT_SECRET,{expiresIn:'1h'});
+        console.log(user);
+        if(!user || await bcrypt.compare(password,user.password)) throw new UnauthenticatedError('Identifiants invalides');
+        const token=jwt.sign({firstname:user.firstname, lastname:user.lastname,email:user.email ,isAdmin:user.isAdmin},process.env.JWT_SECRET,{expiresIn:'1h'});
         res.json({token});
     }catch(error){
         console.log('Error : ',error);
