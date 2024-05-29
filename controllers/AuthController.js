@@ -5,7 +5,7 @@ const bcrypt=require('bcryptjs');
 const joi =require('joi');
 require('dotenv').config();
 const {UnauthenticatedError,BadRequestError}=require('../errors/index');
-const {loginSchema,UserSchema}=require('../middeleware/shemavalidation'); 
+const {loginSchema,UserSchema}=require('../helpers/shemavalidation'); 
 
 
 const register=async (req,res)=>{
