@@ -4,27 +4,24 @@ const jwt=require('jsonwebtoken');
 const bcrypt=require('bcryptjs');
 const joi =require('joi');
 require('dotenv').config();
-const {UnauthenticatedError,BadRequestError}=require('../errors/index');
+const {UnauthenticatedError,BadRequestError,NotFoundError,ConflictError}=require('../errors/index');
 const {loginSchema,UserSchema}=require('../helpers/shemavalidation'); 
 
 
 const register=async (req,res)=>{
     try{
-        const { error } =registerSchema.validate(req.body);
+        const { error } =UserSchema.validate(req.body);
 
-        if (error) {
-          return res.status(400).json({ Erreur: error.details[0].message });
-        }
-        const {firstname ,lastname,email,password,isAdmin,date_creation ,
-            date_modification,profile }=req.body;
+        if (error) throw new BadRequestError('Données saisies invalides');  
+
+        const {firstname ,lastname,email,password,isAdmin }=req.body;
 
         const existingUser = await prisma.utilisateur.findUnique({
                 where: { email },
               });
           
-        if (existingUser) {
-                return res.status(409).json({ error: 'Email already exists' });
-              }
+        if (existingUser)  throw new ConflictError('Email déjà existe');
+            
         const Encryptedpassword = await bcrypt.hash(password,10)
         const  User = await prisma.Utilisateur.create({
             data:{
@@ -32,13 +29,10 @@ const register=async (req,res)=>{
                 lastname,
                 email,
                 password:  Encryptedpassword,
-                isAdmin,
-                date_creation,
-                date_modification,
-                profile
+                isAdmin
             }
         })
-        const token = jwt.sign({ userId: User.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: User.id,isAdmin:User.isAdmin }, process.env.JWT_SECRET, { expiresIn: '1h' });
         User.token = token;
 
         res.json(User); 
@@ -58,7 +52,7 @@ const update = async (req, res) => {
         return res.status(400).json({ error: error.details[0].message });
       }
       const { userId } = req.params;
-      const {  firstname, lastname, email, password, isAdmin, date_modification, profile } = req.body;
+      const {  firstname, lastname, email, password, isAdmin } = req.body;
   
       // Conversion de l'ID en nombre entier
       const userIdAsNumber = Number(userId);
@@ -67,7 +61,7 @@ const update = async (req, res) => {
         where: { id: userIdAsNumber },
       });
   
-      if (!existingUser) {
+      if (!existingUser) { 
         return res.status(404).json({ error: 'User not found' });
       }
   
@@ -89,13 +83,11 @@ const update = async (req, res) => {
             lastname,
             email,
             password: Encryptedpassword,
-            isAdmin,
-            date_modification,
-            profile,
+            isAdmin
           },
         });
   
-        const token = jwt.sign({ userId: update.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: update.id }, process.env.c, { expiresIn: '1h' });
         update.token = token;
   
         res.json(update);
@@ -118,14 +110,15 @@ const login=async (req,res)=>{
             where:{email}
         });
         console.log(user);
-        if(!user || await bcrypt.compare(password,user.password)) throw new UnauthenticatedError('Identifiants invalides');
-        const token=jwt.sign({firstname:user.firstname, lastname:user.lastname,email:user.email ,isAdmin:user.isAdmin},process.env.JWT_SECRET,{expiresIn:'1h'});
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log(isPasswordValid);
+        if(!user || !isPasswordValid) throw new UnauthenticatedError('Identifiants invalides');
+        const token=jwt.sign({userId: user.id,isAdmin:user.isAdmin},process.env.JWT_SECRET,{expiresIn:'1h'});
         res.json({token});
     }catch(error){
         console.log('Error : ',error);
         res.status(500).json({ error: 'Echec de connexion' }); // Erreur Interne du Serveur
     }
-
 }
 
 module.exports={login,update,register};
