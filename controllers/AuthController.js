@@ -7,7 +7,6 @@ require('dotenv').config();
 const {UnauthenticatedError,BadRequestError,NotFoundError,ConflictError}=require('../errors/index');
 const {loginSchema,UserSchema}=require('../helpers/shemavalidation'); 
 
-
 const register=async (req,res)=>{
     try{
         const { error } =UserSchema.validate(req.body);
@@ -23,7 +22,7 @@ const register=async (req,res)=>{
         if (existingUser)  throw new ConflictError('Email déjà existe');
             
         const Encryptedpassword = await bcrypt.hash(password,10)
-        const  User = await prisma.Utilisateur.create({
+        let  User = await prisma.Utilisateur.create({
             data:{
                 firstname,
                 lastname,
@@ -33,92 +32,37 @@ const register=async (req,res)=>{
             }
         })
         const token = jwt.sign({ userId: User.id,isAdmin:User.isAdmin }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        User.token = token;
-
+       
+        User={firstname:User.firstname,
+        lastname:User.lastname, token
+        };
         res.json(User); 
 
     }catch(error){
-        console.log('Error : ',error);
-        res.status(500).json({ error: 'Echec de connexion' }); 
+        console.log(error instanceof ConflictError);
+        res.status(error.statusCode).json({ error: error.message }); 
     }
-
 }
 
-const update = async (req, res) => {
-    try {
-      const { error } = UserSchema.validate(req.body);
-  
-      if (error) {
-        return res.status(400).json({ error: error.details[0].message });
-      }
-      const { userId } = req.params;
-      const {  firstname, lastname, email, password, isAdmin } = req.body;
-  
-      // Conversion de l'ID en nombre entier
-      const userIdAsNumber = Number(userId);
-  
-      const existingUser = await prisma.Utilisateur.findUnique({
-        where: { id: userIdAsNumber },
-      });
-  
-      if (!existingUser) { 
-        return res.status(404).json({ error: 'User not found' });
-      }
-  
-      
-      const existingEmailUser = await prisma.Utilisateur.findFirst({
-        where: { email },
-      });
-  
-      if (existingEmailUser && existingEmailUser.id!== userIdAsNumber) {
-        return res.status(409).json({ error: 'Email already exists' });
-      }
-  
-      if (email!== existingUser.email ||!email) {
-        const Encryptedpassword = await bcrypt.hash(password, 10);
-        const update = await prisma.Utilisateur.update({
-          where: { id: userIdAsNumber },
-          data: {
-            firstname,
-            lastname,
-            email,
-            password: Encryptedpassword,
-            isAdmin
-          },
-        });
-  
-        const token = jwt.sign({ userId: update.id }, process.env.c, { expiresIn: '1h' });
-        update.token = token;
-  
-        res.json(update);
-      } else {
-        return res.status(400).json({ error: 'Email cannot be changed' });
-      }
-    } catch (error) {
-      console.log('Error : ', error);
-      res.status(500).json({ error: 'Server Internal Error' });
-    }
-  };
-  
-  
 const login=async (req,res)=>{
     try{
         const {error}=loginSchema.validate(req.body);
         if(error) throw new BadRequestError('Données saisies invalides');
         const {email,password}= req.body;
-        const user=await prisma.utilisateur.findUnique({
+        let user=await prisma.utilisateur.findUnique({
             where:{email}
         });
-        console.log(user);
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log(isPasswordValid);
         if(!user || !isPasswordValid) throw new UnauthenticatedError('Identifiants invalides');
         const token=jwt.sign({userId: user.id,isAdmin:user.isAdmin},process.env.JWT_SECRET,{expiresIn:'1h'});
-        res.json({token});
+        user={firstname:user.firstname,
+          lastname:user.lastname, token
+          };
+          res.json(user); 
     }catch(error){
-        console.log('Error : ',error);
-        res.status(500).json({ error: 'Echec de connexion' }); // Erreur Interne du Serveur
+      console.log(error instanceof BadRequestError);
+      res.status(error.statusCode).json({ error: error.message }); 
     }
 }
 
-module.exports={login,update,register};
+module.exports={login,register};
