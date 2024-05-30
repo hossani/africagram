@@ -5,7 +5,8 @@ const {BadRequestError}=require('../errors/index');
 const createPost=async (req,res)=>{
     try{
         const image="/img/"+req.file.filename; 
-        if(!image) throw new BadRequestError('Image est obligatoire');
+        console.log(image);
+        if(image==="/img/") throw new BadRequestError('Image est obligatoire');
         const {caption}=req.body;
         if(!caption) throw new BadRequestError('Caption est obligatoire');
         const {userId}= req.user;
@@ -18,7 +19,7 @@ const createPost=async (req,res)=>{
     });
     res.status(201).json(post);
     }catch(error){
-    res.status(error.statusCode).json({message:error.message});
+    res.status(error.statusCode||500).json({message:error.message});
     }
 }
 
