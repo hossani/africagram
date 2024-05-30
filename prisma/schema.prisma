@@ -47,6 +47,8 @@ model Post {
   caption           String
   date_creation     DateTime   @default(now())
   date_modification DateTime   @updatedAt
+  image_url         String     @db.VarChar(255)
+  total_likes       Int        @default(0)
   utilisateur       Utilisateur @relation(fields: [utilisateur_id], references: [id])
   aime              Aime[]
   commentaires      Commentaire[]
