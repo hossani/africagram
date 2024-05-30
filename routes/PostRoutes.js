@@ -8,4 +8,4 @@ const upload=require('../middlewares/uploadImage');
 route.post('/posts',verifyToken,upload.single('image'),createPost);
 route.get('/posts',verifyToken,getPosts);
 
-module.exports=route;
+module.exports=route; 
