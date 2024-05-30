@@ -4,7 +4,7 @@ const likePost  = require('../controllers/LikesController');
 
 const router = express.Router();
 
-router.post('posts/:postId', verifyToken, likePost);
+router.post('/posts/:postId', verifyToken, likePost);
 
 module.exports = router;
 
