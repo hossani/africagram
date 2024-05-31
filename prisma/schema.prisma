@@ -33,9 +33,9 @@ model Utilisateur {
 model Profile {
   id                Int        @id @default(autoincrement())
   id_utilisateur    Int        @unique
-  sexe              String
-  pays              String
-  ville             String
+  sexe              String     @default("")
+  pays              String     @default("")
+  ville             String     @default("")
   date_creation     DateTime   @default(now())
   date_modification DateTime   @updatedAt
   utilisateur       Utilisateur @relation(fields: [id_utilisateur], references: [id])
@@ -76,7 +76,7 @@ model Commentaire {
 model Follower {
   id                Int        @id @default(autoincrement())
   following_id      Int
-  follower_id       Int
+  follower_id       Int     
   date_creation     DateTime   @default(now())
   following         Utilisateur @relation("followingRelation", fields: [following_id], references: [id])
   follower          Utilisateur @relation("followerRelation", fields: [follower_id], references: [id])

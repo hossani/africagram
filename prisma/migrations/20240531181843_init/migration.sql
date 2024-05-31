@@ -17,9 +17,9 @@ CREATE TABLE `Utilisateur` (
 CREATE TABLE `Profile` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `id_utilisateur` INTEGER NOT NULL,
-    `sexe` VARCHAR(191) NOT NULL,
-    `pays` VARCHAR(191) NOT NULL,
-    `ville` VARCHAR(191) NOT NULL,
+    `sexe` VARCHAR(191) NOT NULL DEFAULT '',
+    `pays` VARCHAR(191) NOT NULL DEFAULT '',
+    `ville` VARCHAR(191) NOT NULL DEFAULT '',
     `date_creation` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `date_modification` DATETIME(3) NOT NULL,
 

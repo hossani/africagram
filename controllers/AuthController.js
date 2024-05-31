@@ -2,8 +2,6 @@ const {PrismaClient}=require('@prisma/client');
 const prisma=new PrismaClient();
 const jwt=require('jsonwebtoken');
 const bcrypt=require('bcryptjs');
-const joi =require('joi');
-require('dotenv').config();
 const {UnauthenticatedError,BadRequestError,NotFoundError,ConflictError}=require('../errors/index');
 const {loginSchema,UserSchema}=require('../helpers/shemavalidation'); 
 
@@ -20,27 +18,36 @@ const register=async (req,res)=>{
               });
           
         if (existingUser)  throw new ConflictError('Email déjà existe');
-            
-        const Encryptedpassword = await bcrypt.hash(password,10)
-        let  User = await prisma.Utilisateur.create({
-            data:{
-                firstname,
-                lastname,
-                email,
-                password:  Encryptedpassword,
-                isAdmin
-            }
-        })
+        const Encryptedpassword = await bcrypt.hash(password,10);
+     let User= await prisma.$transaction([
+            prisma.utilisateur.create({
+                data: {
+                    firstname,
+                    lastname,
+                    email,
+                    password: Encryptedpassword,
+                    isAdmin,
+                },
+            }),
+            prisma.profile.create({
+                data: {
+                    utilisateur: {
+                        connect: { emaill }
+                    }
+                },
+            }),
+        ]);
+console.log(User);
         const token = jwt.sign({ userId: User.id,isAdmin:User.isAdmin }, process.env.JWT_SECRET, { expiresIn: '1h' });
        
-        User={firstname:User.firstname,
-        lastname:User.lastname, token
+        User={firstname:User[0].firstname,
+        lastname:User[0].lastname, token
         };
         res.json(User); 
 
     }catch(error){
-        console.log(error instanceof ConflictError);
-        res.status(error.statusCode).json({ error: error.message }); 
+        // console.log(error instanceof ConflictError);
+        res.status(error.statusCode||500).json({ error: error.message }); 
     }
 }
 
