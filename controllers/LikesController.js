@@ -72,4 +72,20 @@ const likePost = async (req, res) => {
   }
 };
 
-module.exports = likePost;
+const likeGet = async (req, res) => {
+  try {
+       const {userId}=req.user;
+   
+       const likes=await prisma.aime.findMany({
+       data: {
+           utilisateur_id :userId,
+       },
+     });
+     if(!likes.length) res.status(200).json({message:'Aucun LIKE detecter'});
+     res.status(200).json(likes); 
+     } catch (error) {
+       res.status(500).json({message:error.message});
+     }
+   };
+
+module.exports = {likePost,likeGet};
