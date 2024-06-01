@@ -5,8 +5,6 @@ const {BadRequestError}=require('../errors/index');
 const createPost=async (req,res)=>{
     try{
         const image="/img/"+req.file.filename; 
-        console.log(image);
-        if(image==="/img/") throw new BadRequestError('Image est obligatoire');
         const {caption}=req.body;
         if(!caption) throw new BadRequestError('Caption est obligatoire');
         const {userId}= req.user;
@@ -31,6 +29,7 @@ const getPosts=async (req,res)=>{
             utilisateur_id: userId,
           }
     });
+    if(!post.length) res.status(200).json({message:"Aucun POST detecter"});
     res.status(200).json(post);
     }catch(error){
     res.status(500).json({message:error.message});

@@ -7,7 +7,7 @@ const getProfile = async (req, res) => {
         const { userId } = req.user; 
         const profile = await prisma.profile.findUnique({
             where: {
-                id_utilisateur: userId,
+                utilisateur_id : userId,
             },
         });
         
@@ -23,11 +23,14 @@ const updateProfile = async (req, res) => {
     try {
         const { userId } = req.user; 
         const {error}=profileSchema.validate(req.body);
-        if (error) throw new BadRequestError(error.details);  
+        if (error) {
+            const errorMessage = error.details[0].message;
+            throw new BadRequestError(`Données saisies invalides: ${errorMessage}`);
+        }
         const { sexe, pays, ville } = req.body;
         const updatedProfile = await prisma.profile.update({
             where: {
-                id_utilisateur: userId,
+                utilisateur_id : userId,
             },
             data: {
                 sexe,

@@ -10,7 +10,6 @@ const register=async (req,res)=>{
         const { error } =UserSchema.validate(req.body);
 
         if (error) throw new BadRequestError('Données saisies invalides');  
-
         const {firstname ,lastname,email,password,isAdmin }=req.body;
 
         const existingUser = await prisma.utilisateur.findUnique({
@@ -32,18 +31,17 @@ const register=async (req,res)=>{
             prisma.profile.create({
                 data: {
                     utilisateur: {
-                        connect: { emaill }
+                        connect: { email }
                     }
                 },
             }),
         ]);
-console.log(User);
-        const token = jwt.sign({ userId: User.id,isAdmin:User.isAdmin }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: User[0].id,isAdmin:User[0].isAdmin }, process.env.JWT_SECRET, { expiresIn: '1h' });
        
         User={firstname:User[0].firstname,
         lastname:User[0].lastname, token
         };
-        res.json(User); 
+        res.status(201).json(User); 
 
     }catch(error){
         // console.log(error instanceof ConflictError);
@@ -65,9 +63,8 @@ const login=async (req,res)=>{
         user={firstname:user.firstname,
           lastname:user.lastname, token
           };
-          res.json(user); 
+          res.status(200).json(user); 
     }catch(error){
-      console.log(error instanceof BadRequestError);
       res.status(error.statusCode).json({ error: error.message }); 
     }
 }

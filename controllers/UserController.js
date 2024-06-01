@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { BadRequestError, NotFoundError } = require('../errors');
-const {UserSchema}=require('../helpers/shemavalidation'); 
+const UserSchema=require('../helpers/userValidation'); 
 
 const getUser = async (req, res) => {
     try {
@@ -13,7 +13,7 @@ const getUser = async (req, res) => {
 
         if (!user) throw new NotFoundError('Utilisateur non trouvé');
 
-        res.json(user);
+        res.status(200).json(user);
     } catch (error) {
         res.status(error.statusCode || 500).json({ error: error.message });
     }
@@ -24,10 +24,12 @@ const updateUser = async (req, res) => {
         const { userId } = req.user;
         const { error } =UserSchema.validate(req.body);
 
-        if (error) throw new BadRequestError('Données saisies invalides'); 
+        if (error){
+            const errorMessage=error.details[0].message;
+            throw new BadRequestError(`Données saisies invalides:${errorMessage}`); 
+        } 
         const { firstname, lastname, email, password, isAdmin } = req.body;
 
-        // Vérifier si l'utilisateur existe
         const existingUser = await prisma.utilisateur.findUnique({
             where: { id: userId },
         });
@@ -45,37 +47,47 @@ const updateUser = async (req, res) => {
             },
         });
 
-        res.json(updatedUser);
+        res.status(200).json(updatedUser);
     } catch (error) {
         res.status(error.statusCode || 500).json({ error: error.message });
     }
 };
 
-// Supprimer un utilisateur par son ID
-const deleteUserById = async (req, res) => {
+// Supprimer un utilisateur 
+const deleteUser = async (req, res) => {
     try {
         const { userId } = req.user;
 
-        // Vérifier si l'utilisateur existe
         const existingUser = await prisma.utilisateur.findUnique({
             where: { id: userId },
         });
         if (!existingUser) throw new NotFoundError('Utilisateur non trouvé');
 
-        // Supprimer l'utilisateur et son profil dans une transaction
         await prisma.$transaction([
+            prisma.aime.deleteMany({
+                where: { utilisateur_id : userId } 
+            }),
+            prisma.post.deleteMany({
+                where: { utilisateur_id : userId } 
+            }),
+            prisma.follower.deleteMany({
+                where: { follower_id: userId } 
+            }),
+            prisma.Commentaire.deleteMany({
+                where: { utilisateur_id : userId } 
+            }),
+             prisma.profile.delete({
+                where: { utilisateur_id : userId }
+            }),
             prisma.utilisateur.delete({
                 where: { id: userId }
             }),
-            prisma.profile.delete({
-                where: { id_utilisateur: userId }
-            })
         ]);
 
-        res.json({ message: 'Utilisateur supprimé avec succès' });
+        res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
     } catch (error) {
         res.status(error.statusCode || 500).json({ error: error.message });
     }
 };
 
-module.exports = {getUser, updateUser, deleteUserById };
+module.exports = {getUser, updateUser, deleteUser };

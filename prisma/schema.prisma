@@ -32,13 +32,13 @@ model Utilisateur {
 
 model Profile {
   id                Int        @id @default(autoincrement())
-  id_utilisateur    Int        @unique
+  utilisateur_id     Int        @unique
   sexe              String     @default("")
   pays              String     @default("")
   ville             String     @default("")
   date_creation     DateTime   @default(now())
   date_modification DateTime   @updatedAt
-  utilisateur       Utilisateur @relation(fields: [id_utilisateur], references: [id])
+  utilisateur       Utilisateur @relation(fields: [utilisateur_id ], references: [id])
 }
 
 model Post {

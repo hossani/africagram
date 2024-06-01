@@ -1,19 +1,23 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const {postIdSchema}=require('../helpers/shemavalidation');
-const {BadRequestError}=require('../errors/index');
+const {NotFoundError}=require('../errors/index');
 
 const commentCreate = async (req, res) => {
  
   try {
     const {userId}=req.user;
-    const {post_id,message}=req.body;
-    const {error}=postIdSchema.test(post_id);
-    if (error) throw new BadRequestError('Données saisies invalides');  
-    const comment=await prisma.follower.create({
+    const {message}=req.body;
+    const {postId } = req.params;  
+    const post = await prisma.post.findUnique({
+      where: {
+        id: Number(postId),
+      },
+    });
+    if (!post) throw new NotFoundError('Post non trouver');
+    const comment=await prisma.commentaire.create({
     data: {
         utilisateur_id :userId,
-        post_id,
+        post_id:Number(postId),
       message
     },
   });
@@ -28,8 +32,8 @@ const commentGet = async (req, res) => {
  try {
       const {userId}=req.user;
   
-      const comment=await prisma.follower.findMany({
-      data: {
+      const comment=await prisma.commentaire.findMany({
+      where: {
           utilisateur_id :userId,
       },
     });

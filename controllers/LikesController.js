@@ -12,7 +12,7 @@ const likePost = async (req, res) => {
         id: Number(postId),
       },
     });
-    if (!post) throw new NotFoundError('Post not found');
+    if (!post) throw new NotFoundError('Post non trouver');
 
     const existingLike = await prisma.aime.findFirst({
       where: {
@@ -61,11 +61,11 @@ const likePost = async (req, res) => {
       ]);
       newLike = false;
     }
-
+    
     if (newLike) {
-      res.status(201).json({ message: 'Like added successfully' });
+      res.status(201).json({ message: 'Like ajouter avec succès' });
     } else {
-      res.status(200).json({ message: 'Like removed successfully' });
+      res.status(200).json({ message: 'Like annuler avec succès' });
     }
   } catch (error) {
     res.status(error.statusCode||500).json({ message: error.message });
@@ -77,7 +77,7 @@ const likeGet = async (req, res) => {
        const {userId}=req.user;
    
        const likes=await prisma.aime.findMany({
-       data: {
+       where: {
            utilisateur_id :userId,
        },
      });
