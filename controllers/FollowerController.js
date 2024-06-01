@@ -48,7 +48,8 @@ const getFollower=async(req,res)=>{
         follower_id:userId
       }
     });
-    if(follow.length==0)  {res.status(200).json({message:'Vous avez pas fait aucun follow '}); } else{
+    if(follow.length==0)  {res.status(200).json({message:'Vous avez pas fait aucun follow '}); } 
+    else{
   res.status(200).json(follow); }
   } catch (error) {
     res.status(error.statusCode||500).json({message:error.message});

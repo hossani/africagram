@@ -29,8 +29,9 @@ const getPosts=async (req,res)=>{
             utilisateur_id: userId,
           }
     });
-    if(!post.length) res.status(200).json({message:"Aucun POST detecter"});
-    res.status(200).json(post);
+    if(!post.length) {res.status(200).json({message:"Aucun POST detecter"});}
+    else{
+    res.status(200).json(post);}
     }catch(error){
     res.status(500).json({message:error.message});
     }

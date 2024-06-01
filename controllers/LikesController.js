@@ -81,8 +81,10 @@ const likeGet = async (req, res) => {
            utilisateur_id :userId,
        },
      });
-     if(!likes.length) res.status(200).json({message:'Aucun LIKE detecter'});
-     res.status(200).json(likes); 
+     if(!likes.length) {res.status(200).json({message:'Aucun LIKE detecter'});}
+     else{
+      res.status(200).json(likes); 
+     }
      } catch (error) {
        res.status(500).json({message:error.message});
      }
