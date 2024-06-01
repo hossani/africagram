@@ -5,7 +5,7 @@ const {ForbiddenError}=require('../errors/index');
 const satistics=async(req,res)=>{
     try{
         const {isAdmin}=req.user;
-        if(!isAdmin) throw new ForbiddenError('Access denied');
+        if(!isAdmin) throw new ForbiddenError('Vous etes pas autoriser');
         const countUser=await prisma.utilisateur.count();
         const countPost=await prisma.post.count();
         const countPays=await prisma.profile.groupBy({

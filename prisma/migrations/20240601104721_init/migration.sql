@@ -16,14 +16,14 @@ CREATE TABLE `Utilisateur` (
 -- CreateTable
 CREATE TABLE `Profile` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `id_utilisateur` INTEGER NOT NULL,
+    `utilisateur_id` INTEGER NOT NULL,
     `sexe` VARCHAR(191) NOT NULL DEFAULT '',
     `pays` VARCHAR(191) NOT NULL DEFAULT '',
     `ville` VARCHAR(191) NOT NULL DEFAULT '',
     `date_creation` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `date_modification` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Profile_id_utilisateur_key`(`id_utilisateur`),
+    UNIQUE INDEX `Profile_utilisateur_id_key`(`utilisateur_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -72,7 +72,7 @@ CREATE TABLE `Follower` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Profile` ADD CONSTRAINT `Profile_id_utilisateur_fkey` FOREIGN KEY (`id_utilisateur`) REFERENCES `Utilisateur`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Profile` ADD CONSTRAINT `Profile_utilisateur_id_fkey` FOREIGN KEY (`utilisateur_id`) REFERENCES `Utilisateur`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Post` ADD CONSTRAINT `Post_utilisateur_id_fkey` FOREIGN KEY (`utilisateur_id`) REFERENCES `Utilisateur`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

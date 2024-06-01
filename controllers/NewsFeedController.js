@@ -12,6 +12,7 @@ const newsFeed=async(req,res)=>{
             }
         });
         const followingIds = following.map(f => f.following_id);
+        let resultsPost=[];
         if(cursor){
              resultsPost = await prisma.post.findMany({
                 take: 5,
@@ -24,7 +25,7 @@ const newsFeed=async(req,res)=>{
                     }
                 },
                 orderBy: {
-                    date_modification: 'desc',
+                    date_creation: 'desc',
                 },
               });  
               if(!resultsPost.length) throw new NotFoundError('Aucun resultat trouvé avec le curseur spécifié');
@@ -37,12 +38,13 @@ const newsFeed=async(req,res)=>{
                     }
                 },
                 orderBy: {
-                    date_modification: 'desc',
+                    date_creation: 'desc',
                 },
               });
-              if(!resultsPost.length) res.status(200).json({message:'Aucun post detecter'});
         }
-        res.status(200).json(resultsPost);
+        if(!resultsPost.length) { res.status(200).json({message:'Aucun post detecter'}); }
+else{
+        res.status(200).json(resultsPost);}
     }catch(error){
         res.status(error.statusCode||500).json({message:error.message});
     }
