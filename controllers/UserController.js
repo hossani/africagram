@@ -62,8 +62,25 @@ const deleteUser = async (req, res) => {
             where: { id: userId },
         });
         if (!existingUser) throw new NotFoundError('Utilisateur non trouvé');
-
+        const aimes=await prisma.aime.findMany({
+            where:{
+                utilisateur_id :userId
+            }
+        });
+        const idPost=aimes.map(a=>a.post_id);
         await prisma.$transaction([
+            prisma.post.updateMany({
+                where:{
+                    id:{
+                        in:idPost
+                    }
+                },
+                data: {
+                    total_likes: {
+                    decrement: 1,
+                    },
+                },
+            }),
             prisma.aime.deleteMany({
                 where: { utilisateur_id : userId } 
             }),
@@ -89,5 +106,4 @@ const deleteUser = async (req, res) => {
         res.status(error.statusCode || 500).json({ error: error.message });
     }
 };
-
 module.exports = {getUser, updateUser, deleteUser };

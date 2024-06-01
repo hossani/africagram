@@ -37,8 +37,10 @@ const commentGet = async (req, res) => {
           utilisateur_id :userId,
       },
     });
-    if(!comment.length) res.status(200).json({message:'Aucun comment detecter'});
-    res.status(200).json(comment); 
+    if(!comment.length) {res.status(200).json({message:'Aucun comment detecter'});}
+    else{
+      res.status(200).json(comment); 
+    }
     } catch (error) {
       res.status(500).json({message:error.message});
     }

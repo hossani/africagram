@@ -16,6 +16,7 @@ const newsFeed=async(req,res)=>{
         if(cursor){
              resultsPost = await prisma.post.findMany({
                 take: 5,
+                skip:1,
                 cursor: {
                     id: parseInt(cursor),
                   },
