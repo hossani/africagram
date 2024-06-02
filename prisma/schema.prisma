@@ -22,6 +22,9 @@ model Utilisateur {
   isAdmin           Boolean    @default(false)
   date_creation     DateTime   @default(now())
   date_modification DateTime   @updatedAt
+   phoneNumber       String
+   otp               String?
+  otpExpiration     DateTime?
   profile           Profile?
   posts             Post[]
   aime              Aime[]
