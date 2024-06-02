@@ -4,13 +4,21 @@ const jwt=require('jsonwebtoken');
 const bcrypt=require('bcryptjs');
 const {UnauthenticatedError,BadRequestError,NotFoundError,ConflictError}=require('../errors/index');
 const {loginSchema,UserSchema}=require('../helpers/shemavalidation'); 
+const twilio = require('twilio');
+const {sendOtp,generateOTP}=require('../helpers/methodOTP');
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = new twilio(accountSid, authToken);
 
 const register=async (req,res)=>{
     try{
         const { error } =UserSchema.validate(req.body);
 
-        if (error) throw new BadRequestError('Données saisies invalides');  
-        const {firstname ,lastname,email,password,isAdmin }=req.body;
+        if (error){
+            const errorMessage=error.details[0].message;
+            throw new BadRequestError(`Données saisies invalides:${errorMessage}`); 
+        } 
+        const {firstname ,lastname,email,password,isAdmin,phoneNumber }=req.body;
 
         const existingUser = await prisma.utilisateur.findUnique({
                 where: { email },
@@ -26,6 +34,7 @@ const register=async (req,res)=>{
                     email,
                     password: Encryptedpassword,
                     isAdmin,
+                    phoneNumber
                 },
             }),
             prisma.profile.create({
@@ -51,22 +60,52 @@ const register=async (req,res)=>{
 
 const login=async (req,res)=>{
     try{
-        const {error}=loginSchema.validate(req.body);
-        if(error) throw new BadRequestError('Données saisies invalides');
-        const {email,password}= req.body;
-        let user=await prisma.utilisateur.findUnique({
-            where:{email}
+        const user = req.user;
+        const token = jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      
+        res.status(200).json({
+          firstname: user.firstname,
+          lastname: user.lastname,
+          token
         });
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if(!user || !isPasswordValid) throw new UnauthenticatedError('Identifiants invalides');
-        const token=jwt.sign({userId: user.id,isAdmin:user.isAdmin},process.env.JWT_SECRET,{expiresIn:'1h'});
-        user={firstname:user.firstname,
-          lastname:user.lastname, token
-          };
-          res.status(200).json(user); 
     }catch(error){
       res.status(error.statusCode||500).json({ error: error.message }); 
     }
 }
 
-module.exports={login,register};
+const loginOTP = async (req, res) => {
+    try {
+      const { error } = loginSchema.validate(req.body);
+      if (error){
+        const errorMessage=error.details[0].message;
+        throw new BadRequestError(`Données saisies invalides:${errorMessage}`); 
+    } 
+      const { email, password } = req.body;
+  
+      let user = await prisma.utilisateur.findUnique({
+        where: { email },
+      });
+  
+      if (!user) throw new UnauthenticatedError('Identifiants invalides');
+  
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) throw new UnauthenticatedError('Identifiants invalides');
+  
+      const otp = generateOTP();
+      const otpExpiration = new Date(Date.now() + 10 * 60 * 1000); // OTP valide pendant 10 minutes
+  
+      await prisma.utilisateur.update({
+        where: { email },
+        data: { otp, otpExpiration }
+      });
+  
+      await sendOtp(user.phoneNumber, otp);
+  
+      res.status(200).json({ message: 'OTP envoyé, veuillez vérifier votre téléphone', userId: user.id });
+} catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  };
+
+
+module.exports={login,register,loginOTP};

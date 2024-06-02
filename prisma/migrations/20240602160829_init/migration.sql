@@ -8,6 +8,9 @@ CREATE TABLE `Utilisateur` (
     `isAdmin` BOOLEAN NOT NULL DEFAULT false,
     `date_creation` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `date_modification` DATETIME(3) NOT NULL,
+    `phoneNumber` VARCHAR(191) NOT NULL,
+    `otp` VARCHAR(191) NULL,
+    `otpExpiration` DATETIME(3) NULL,
 
     UNIQUE INDEX `Utilisateur_email_key`(`email`),
     PRIMARY KEY (`id`)

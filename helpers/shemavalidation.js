@@ -30,6 +30,10 @@ const UserSchema = joi.object({
   }),
   isAdmin: joi.boolean().messages({
     'boolean.base': 'La valeur de isAdmin doit être un booléen.'
+  }),
+  phoneNumber: joi.string().pattern(/^\+2126\d{8}$/).required().messages({
+    'string.pattern.base': 'Le numéro de téléphone doit être au format valide.',
+    'any.required': 'Le numéro de téléphone est obligatoire.'
   })
 });
 
