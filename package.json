@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^5.14.0",
+    "app-root-path": "^3.1.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -24,6 +25,7 @@
     "path": "^0.12.7",
     "prisma": "^5.14.0",
     "twilio": "^5.1.0",
+    "winston": "^3.13.0",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
