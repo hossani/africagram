@@ -9,6 +9,7 @@ const {sendOtp,generateOTP}=require('../helpers/methodOTP');
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = new twilio(accountSid, authToken);
+const {errorLogger,infoLogger}=require('../helpers/logWinston');
 
 const register=async (req,res)=>{
     try{
@@ -46,14 +47,15 @@ const register=async (req,res)=>{
             }),
         ]);
         const token = jwt.sign({ userId: User[0].id,isAdmin:User[0].isAdmin }, process.env.JWT_SECRET, { expiresIn: '1h' });
-       
+        const userEmail=User[0].email;
         User={firstname:User[0].firstname,
         lastname:User[0].lastname, token
         };
         res.status(201).json(User); 
-
+        infoLogger.info(`Utilisateur enregistré : ${userEmail}`);
     }catch(error){
         // console.log(error instanceof ConflictError);
+        errorLogger.error(`Erreur lors de l'enregistrement : ${error.message}`);
         res.status(error.statusCode||500).json({ error: error.message }); 
     }
 }
@@ -68,7 +70,9 @@ const login=async (req,res)=>{
           lastname: user.lastname,
           token
         });
+        infoLogger.info(`Utilisateur connecté : ${user.email}`);
     }catch(error){
+      errorLogger.error(`Erreur lors de la connexion : ${error.message}`);
       res.status(error.statusCode||500).json({ error: error.message }); 
     }
 }
