@@ -65,7 +65,7 @@ const login=async (req,res)=>{
           };
           res.status(200).json(user); 
     }catch(error){
-      res.status(error.statusCode).json({ error: error.message }); 
+      res.status(error.statusCode||500).json({ error: error.message }); 
     }
 }
 
